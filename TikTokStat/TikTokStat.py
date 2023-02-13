@@ -13,6 +13,8 @@ def parse_date(map, field):
             print("Date format must be DD.MM.YYYY")
 
 def median(numbers):
+    if len(numbers) == 0:
+        return 0
     numbers.sort()
     if len(numbers) % 2 == 0:
         return (numbers[len(numbers) // 2 - 1] + numbers[len(numbers) // 2]) / 2
@@ -20,6 +22,8 @@ def median(numbers):
         return numbers[len(numbers) // 2]
 
 def average(numbers):
+    if len(numbers) == 0:
+        return 0
     return sum(numbers) / len(numbers)
 
 def read_configs(name, map):
@@ -38,7 +42,7 @@ def parse_configs(map):
     map["video_amount"] = int(map["video_amount"])
     parse_date(map, "date_start")
     parse_date(map, "date_end")
-    if (map["date_start"] > map["date_end"]):
+    if (map["date_start"] != "" and map["date_end"] != "" and map["date_start"] > map["date_end"]):
         print(f"date_start {map['date_start']} > date_end {map['date_end']}")
         print("dates ignored")
         map["date_start"] = ""
