@@ -60,58 +60,86 @@ def read_inputs(name, storage):
 
 def main_logic(storage, config):
     print()
+    left = len(storage)
     for data in storage:
-        print(f"Analysing {data['Account']}")
-        with TikTokAPI() as api:
-            user = api.user(data['Account'][1:])
-            count = 0
-            comments = []
-            likes = []
-            views = []
-            shares = []
-            for video in user.videos:
-                create_date = to_date(video.create_time)
-                if count >= config["video_amount"]:
-                    print(f"    Reached maximum amount for the current user.")
-                    break
-                if config["date_end"] != "" and config["date_end"] < create_date:
-                    print(f"    Video {video.desc} skipped because create_date = {create_date} < date_end = {config['date_end']}")
-                    continue
-                if config["date_start"] != "" and config["date_start"] > create_date:
-                    print(f"    Stop analysing current user because video {video.desc} create_date = {create_date} > date_start = {config['date_start']}")
-                    break
-                print(f"    Analysing video {video.desc}")
-                count += 1
-                data["video " + str(count) + " create time"] = str(video.create_time)
-                data["video " + str(count) + " desc"] = str(video.desc)
-                data["video " + str(count) + " comments"] = str(video.stats.comment_count)
-                data["video " + str(count) + " likes"] = str(video.stats.digg_count)
-                data["video " + str(count) + " views"] = str(video.stats.play_count)
-                data["video " + str(count) + " shares"] = str(video.stats.share_count)
-                comments.append(video.stats.comment_count)
-                likes.append(video.stats.digg_count)
-                views.append(video.stats.play_count)
-                shares.append(video.stats.share_count)
-            for i in range(count + 1, config["video_amount"] + 1):
-                data["video " + str(i) + " create time"] = ""
-                data["video " + str(i) + " desc"] = ""
-                data["video " + str(i) + " comments"] = ""
-                data["video " + str(i) + " likes"] = ""
-                data["video " + str(i) + " views"] = ""
-                data["video " + str(i) + " shares"] = ""
-            data["total videos in period"] = str(count)
-            data["total comments"] = str(sum(comments))
-            data["total likes"] = str(sum(likes))
-            data["total views"] = str(sum(views))
-            data["total shares"] = str(sum(shares))
-            data["avg comments"] = str(average(comments))
-            data["avg likes"] = str(average(likes))
-            data["avg views"] = str(average(views))
-            data["avg shares"] = str(average(shares))
-            data["med comments"] = str(median(comments))
-            data["med likes"] = str(median(likes))
-            data["med views"] = str(median(views))
-            data["med shares"] = str(median(shares))
+        left -= 1
+        print(f"Analysing {data['Account']}, left = {left}")
+        for i in range(1, config["video_amount"] + 1):
+            data["video " + str(i) + " create time"] = ""
+            data["video " + str(i) + " desc"] = ""
+            data["video " + str(i) + " comments"] = ""
+            data["video " + str(i) + " likes"] = ""
+            data["video " + str(i) + " views"] = ""
+            data["video " + str(i) + " shares"] = ""
+        data["total videos in period"] = ""
+        data["total comments"] = ""
+        data["total likes"] = ""
+        data["total views"] = ""
+        data["total shares"] = ""
+        data["avg comments"] = ""
+        data["avg likes"] = ""
+        data["avg views"] = ""
+        data["avg shares"] = ""
+        data["med comments"] = ""
+        data["med likes"] = ""
+        data["med views"] = ""
+        data["med shares"] = ""
+        data["success"] = "False"
+        isSuccess = False
+        max_attempts = 5
+        for attempt in range(0, max_attempts):
+            try:
+                with TikTokAPI() as api:
+                    user = api.user(data['Account'][1:])
+                    count = 0
+                    comments = []
+                    likes = []
+                    views = []
+                    shares = []
+                    for video in user.videos:
+                        create_date = to_date(video.create_time)
+                        if count >= config["video_amount"]:
+                            print(f"    Reached maximum amount for the current user.")
+                            break
+                        if config["date_end"] != "" and config["date_end"] < create_date:
+                            print(f"    Video {video.desc} skipped because create_date = {create_date} < date_end = {config['date_end']}")
+                            continue
+                        if config["date_start"] != "" and config["date_start"] > create_date:
+                            print(f"    Stop analysing current user because video {video.desc} create_date = {create_date} > date_start = {config['date_start']}")
+                            break
+                        print(f"    Analysing video {video.desc}")
+                        count += 1
+                        data["video " + str(count) + " create time"] = str(video.create_time)
+                        data["video " + str(count) + " desc"] = str(video.desc)
+                        data["video " + str(count) + " comments"] = str(video.stats.comment_count)
+                        data["video " + str(count) + " likes"] = str(video.stats.digg_count)
+                        data["video " + str(count) + " views"] = str(video.stats.play_count)
+                        data["video " + str(count) + " shares"] = str(video.stats.share_count)
+                        comments.append(video.stats.comment_count)
+                        likes.append(video.stats.digg_count)
+                        views.append(video.stats.play_count)
+                        shares.append(video.stats.share_count)
+                    data["total videos in period"] = str(count)
+                    data["total comments"] = str(sum(comments))
+                    data["total likes"] = str(sum(likes))
+                    data["total views"] = str(sum(views))
+                    data["total shares"] = str(sum(shares))
+                    data["avg comments"] = str(average(comments))
+                    data["avg likes"] = str(average(likes))
+                    data["avg views"] = str(average(views))
+                    data["avg shares"] = str(average(shares))
+                    data["med comments"] = str(median(comments))
+                    data["med likes"] = str(median(likes))
+                    data["med views"] = str(median(views))
+                    data["med shares"] = str(median(shares))
+                    isSuccess = True
+            except Exception as ee:
+                print(f"Error: {ee}")
+                print(f"Attempt {attempt} failed")
+            if isSuccess:
+                print(f"Success with {data['Account']} on {attempt} attempt")
+                data["success"] = "True"
+                break
     print("analysis end, creating file")
 
 def write_csv(name, storage):
