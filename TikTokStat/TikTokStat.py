@@ -84,6 +84,10 @@ def main_logic(storage, config):
         data["med likes"] = ""
         data["med views"] = ""
         data["med shares"] = ""
+        data["follower count"] = ""
+        data["following count"] = ""
+        data["heart count"] = ""
+        data["video count"] = ""
         data["success"] = "False"
         isSuccess = False
         max_attempts = 5
@@ -91,6 +95,10 @@ def main_logic(storage, config):
             try:
                 with TikTokAPI() as api:
                     user = api.user(data['Account'][1:])
+                    data["follower count"] = user.stats.follower_count
+                    data["following count"] = user.stats.following_count
+                    data["heart count"] = user.stats.heart_count
+                    data["video count"] = user.stats.video_count
                     count = 0
                     comments = []
                     likes = []
